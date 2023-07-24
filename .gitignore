@@ -1,0 +1,16 @@
+RDOX
+ChangeLog
+*.gem
+*.rbc
+stage
+*.tar.gz
+Gemfile.lock
+.rbx
+doc
+/.bundle
+/.yardoc
+/coverage
+
+.idea
+.vscode
+.DS_Store
