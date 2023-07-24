@@ -1,5 +1,5 @@
 Gem::Specification.new do |s|
-  s.name        = "test-inigorb"
+  s.name        = "inigorb"
   s.version     = File.read(File.join(File.dirname(__FILE__), 'VERSION'))
   s.platform    = Gem::Platform::RUBY
 
