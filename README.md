@@ -1,7 +1,7 @@
 <br />
 <div align="center">
-  <img src="https://raw.githubusercontent.com/inigolabs/inigo-ruby/master/assets/inigo.svg">
-  <img height="25" src="https://raw.githubusercontent.com/inigolabs/inigo-ruby/master/assets/ruby.svg">
+  <img src="/assets/inigo.svg">
+  <img height="25" src="/assets/ruby.svg">
 
   <p align="center">
     GraphQL Middleware
