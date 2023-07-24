@@ -10,7 +10,7 @@
     <br /> <br />
     <a href="https://inigo.io">Homepage</a>
     ·
-    <a href="https://github.com/inigolabs/inigo-ruby/tree/master/example">View an example</a>
+    <a href="https://github.com/inigolabs/inigo-ruby/tree/master/example-rails">View an example</a>
     ·
     <a href="https://github.com/inigolabs/inigo-ruby/issues">Report Bug</a>
   </p>
