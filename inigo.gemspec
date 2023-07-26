@@ -5,8 +5,8 @@ Gem::Specification.new do |s|
 
   s.summary     = "Inigo GraphQL plugin for Ruby"
 
-  s.authors     = ["Sergii Kreitor"]
-  s.email       = "skreytor@inigo.io"
+  s.authors     = ["Inigo"]
+  s.email       = "eitan@inigo.io"
   s.files       = Dir['lib/*.rb', 'lib/*.so', 'lib/*.dylib', 'lib/*.dll', 'README.md']
   s.homepage    = "https://inigo.io"
   s.license     = "MIT"
