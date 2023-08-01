@@ -11,12 +11,13 @@ module Inigo
       end
     
       if system_name == 'linux'
-        if machine == 'x86_64' && ['64bit', 'universal'].include?(RUBY_PLATFORM.match(/(\d+)/)[0])
-          return 'amd64'
-        elsif machine == 'aarch64'
+        if machine == 'aarch64'
           return 'arm64'
-        elsif machine == 'x86_64' && RUBY_PLATFORM.match?(/(i\d86|x\d86)/)
-          return '386'
+        # 32 bits systems bindings support is on the way
+        # elsif RUBY_PLATFORM.match?(/(i\d86|x\d86)/)
+        #   return '386'
+        elsif machine == 'x86_64'
+          return 'amd64'
         elsif machine.start_with?('arm') # armv7l
           return 'arm'
         end

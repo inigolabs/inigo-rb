@@ -1,0 +1,8 @@
+githubRepoOwner: inigolabs
+githubRepoName: inigo-rb
+githubHost: github.com
+requireChecks: true
+requireApproval: true
+mergeMethod: rebase
+mergeQueue: false
+forceFetchTags: false
