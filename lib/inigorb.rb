@@ -158,7 +158,7 @@ module Inigo
 
       config[:schema] = FFI::MemoryPointer.from_string(schema.to_s.encode('UTF-8')) if schema
 
-      @@path = settings.fetch('INIGO_PATH', '/query')
+      @@path = settings.fetch('INIGO_PATH', '/graphql')
 
       # Create Inigo instance
       @@instance = Inigo.create(config.pointer.address)
