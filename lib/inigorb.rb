@@ -165,7 +165,7 @@ module Inigo
 
       error = Inigo.check_lasterror
       if error.length != 0
-        puts "INIGO: #{error.read_string}"
+        puts "INIGO: #{error}"
       end
 
       if @@instance == 0
