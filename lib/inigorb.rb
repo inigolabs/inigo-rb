@@ -87,7 +87,7 @@ module Inigo
 
       # Introspection query
       if resp.any?
-        return respond(resp)
+        return respond(200, { 'Content-Type' => 'application/json'}, resp)
       end
 
       # Modify query if required
@@ -108,12 +108,12 @@ module Inigo
       end
 
       # Forward to request handler
-      response = @app.call(env)
+      status, headers, response = @app.call(env)
 
       # Inigo: process response
-      processed_response = q.process_response(response[2].body.to_s)
+      processed_response = q.process_response(response.body.to_s)
       if processed_response
-        return respond(processed_response)
+        return respond(status, headers, processed_response)
       end
 
       response
@@ -190,14 +190,13 @@ module Inigo
       JSON.dump(headers)
     end
 
-    def respond(data)
-      response = Rack::Response.new
+    def respond(status, headers, data)      
       response_hash = {}
       response_hash['data'] = data['data'] if data['data']
       response_hash['errors'] = data['errors'] if data['errors']
       response_hash['extensions'] = data['extensions'] if data['extensions']
-      response.write(JSON.dump(response_hash))
-      response.finish
+
+      [status, headers, [JSON.dump(response_hash)]]
     end
 
   end  
