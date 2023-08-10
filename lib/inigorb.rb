@@ -9,6 +9,7 @@ module Inigo
     @@initialized = false
     @@path = ''
     @@schema = ''
+    @@operation_store = nil
 
     def self.instance
       @@instance
@@ -40,6 +41,14 @@ module Inigo
 
     def self.schema=(value)
       @@schema = value
+    end
+
+    def self.operation_store
+      @@operation_store
+    end
+
+    def self.operation_store=(value)
+      @@operation_store = value
     end
 
     def initialize(app)
@@ -74,10 +83,77 @@ module Inigo
       if request.post?
         # Read request from body
         request.body.each { |chunk| gReq += chunk }
+
+        if self.class.operation_store.present? && gReq.include?("operationId")
+          parsed = JSON.parse(gReq)
+          parts = parsed['operationId'].split('/')
+          # Query can't be resolved
+          if parts.length != 2
+            request.body.rewind
+            return @app.call(env)
+          end
+          data = self.class.operation_store.get(client_name: parts[0], operation_alias: parts[1])
+          # Query can't be resolved
+          if !data
+            request.body.rewind
+            return @app.call(env)
+          end
+          if data.name
+            parsed.merge!('operationName' => data.name)
+          end
+  
+          if data.body
+            parsed.merge!('query' => data.body)
+          end
+
+          gReq = ''
+          gReq = JSON.dump(parsed)
+          env['rack.input'] = StringIO.new(gReq)
+          env['CONTENT_LENGTH'] = gReq.length.to_s
+          env['CONTENT_TYPE'] = 'application/json'
+        end
         request.body.rewind
       elsif request.get?
+        req = {}
+
+        if request.params['query']
+          req.merge!('query' => request.params['query'])
+        end
+
+        if request.params['operationName']
+          req.merge!('operationName' => request.params['operationName'])
+        end
+
+        if request.params['variables']
+          req.merge!('variables' => request.params['variables'])
+        end
+
+        if request.params['operationId']
+          req.merge!('operationId' => request.params['operationId'])
+          if self.class.operation_store
+            parts = request.params['operationId'].split('/')
+            # Query can't be resolved
+            if parts.length != 2
+              return @app.call(env)
+            end
+            data = self.class.operation_store.get(client_name: parts[0], operation_alias: parts[1])
+            # Query can't be resolved
+            if !data
+              return @app.call(env)
+            end
+
+            if data.name
+              req.merge!('operationName' => data.name)
+            end
+    
+            if data.body
+              req.merge!('query' => data.body)
+            end
+          end
+        end
+
         # Read request from query param
-        gReq = JSON.dump({ 'query' => request.params['query'] })
+        gReq = JSON.dump(req)
       end
 
       q = Query.new(self.class.instance, gReq)
@@ -121,12 +197,17 @@ module Inigo
 
     private
 
-    def self.initialize_middleware(schema = nil)
+    def self.initialize_middleware(schema = nil, operation_store = nil)
       return if @@initialized
 
       if schema
         @@schema = schema
       end
+
+      if operation_store
+        @@operation_store = operation_store
+      end
+
       # get all the inigo settings from env
       settings = ENV.select { |k, v| k.start_with?('INIGO') }
 
