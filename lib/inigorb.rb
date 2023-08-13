@@ -69,7 +69,7 @@ module Inigo
       end
 
       # GraphiQL request
-      if request.get? && request.accept.include?('text/html')
+      if request.get? && env['HTTP_ACCEPT'].include?('text/html')
         return @app.call(env)
       end
 
@@ -84,9 +84,16 @@ module Inigo
         # Read request from body
         request.body.each { |chunk| gReq += chunk }
 
-        if self.class.operation_store.present? && gReq.include?("operationId")
+        if self.class.operation_store.present? && has_operation_id?(gReq)
           parsed = JSON.parse(gReq)
-          parts = parsed['operationId'].split('/')
+          operationId = get_operation_id(parsed)
+
+          if !operationId
+            request.body.rewind
+            return @app.call(env)
+          end
+
+          parts = operationId.split('/')
           # Query can't be resolved
           if parts.length != 2
             request.body.rewind
@@ -114,24 +121,9 @@ module Inigo
         end
         request.body.rewind
       elsif request.get?
-        req = {}
-
-        if request.params['query']
-          req.merge!('query' => request.params['query'])
-        end
-
-        if request.params['operationName']
-          req.merge!('operationName' => request.params['operationName'])
-        end
-
-        if request.params['variables']
-          req.merge!('variables' => request.params['variables'])
-        end
-
-        if request.params['operationId']
-          req.merge!('operationId' => request.params['operationId'])
-          if self.class.operation_store
-            parts = request.params['operationId'].split('/')
+        operation_id = get_operation_id(request.params)
+        if operation_id && self.class.operation_store
+            parts = operation_id.split('/')
             # Query can't be resolved
             if parts.length != 2
               return @app.call(env)
@@ -143,17 +135,19 @@ module Inigo
             end
 
             if data.name
-              req.merge!('operationName' => data.name)
+              request.params['operationName'] = data.name
             end
     
             if data.body
-              req.merge!('query' => data.body)
+              request.params['query'] = data.body
             end
-          end
+
+            # Update the env with the modified query string
+            env['QUERY_STRING'] = Rack::Utils.build_nested_query(request.params)
         end
 
         # Read request from query param
-        gReq = JSON.dump(req)
+        gReq = JSON.dump(request.params)
       end
 
       q = Query.new(self.class.instance, gReq)
@@ -278,6 +272,25 @@ module Inigo
       response_hash['extensions'] = data['extensions'] if data['extensions']
 
       [status, headers, [JSON.dump(response_hash)]]
+    end
+
+    # operates with string data not to parse the request body unnecessary
+    def has_operation_id?(str_data)
+      # Relay / Apollo 1.x and Apollo Link have the same field just in different places.
+      str_data.include?('operationId')
+    end
+
+    # extracts operation id from parsed body hash
+    def get_operation_id(json_data)
+      # Relay / Apollo 1.x
+      if json_data.include?('operationId')
+        json_data['operationId']
+      # Apollo Link
+      elsif json_data.include?('extensions') && json_data['extensions'].include?('operationId')
+        json_data['extensions']['operationId']
+      else
+        nil
+      end
     end
 
   end  
