@@ -63,8 +63,10 @@ module Inigo
 
       request = Rack::Request.new(env)
 
-      # 'path' guard -> /graphql
-      if request.path != self.class.path
+      path = self.class.path
+      path += "/" unless path.end_with?("/")
+      # 'path' guard -> /graphql, /graphql/whatever
+      if request.path != self.class.path && !request.path.start_with?(path)
         return @app.call(env)
       end
 
