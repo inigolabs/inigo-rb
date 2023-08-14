@@ -86,7 +86,7 @@ module Inigo
         # Read request from body
         request.body.each { |chunk| gReq += chunk }
 
-        if self.class.operation_store.present? && has_operation_id?(gReq)
+        if self.class.operation_store.present? && has_operation_id?(gReq) && !has_query?(gReq)
           parsed = JSON.parse(gReq)
           operationId = get_operation_id(parsed)
 
@@ -124,7 +124,7 @@ module Inigo
         request.body.rewind
       elsif request.get?
         operation_id = get_operation_id(request.params)
-        if operation_id && self.class.operation_store
+        if operation_id && self.class.operation_store && !request.params['query']
             parts = operation_id.split('/')
             # Query can't be resolved
             if parts.length != 2
@@ -279,6 +279,10 @@ module Inigo
     def has_operation_id?(str_data)
       # Relay / Apollo 1.x and Apollo Link have the same field just in different places.
       str_data.include?('operationId')
+    end
+
+    def has_query?(str_data)
+      return str_data.include?('"query":') && str_data.match(/"query"\s*:\s*"\S+"/)
     end
 
     # extracts operation id from parsed body hash
