@@ -181,14 +181,10 @@ module Inigo
 
       # Forward to request handler
       status, headers, response = @app.call(env)
-
+      headers.delete("Content-Length")
       # Inigo: process response
-      processed_response = q.process_response(response.body.to_s)
-      if processed_response
-        return respond(status, headers, processed_response)
-      end
-
-      response
+      response = q.process_response(response.body.to_s)
+      [status, headers, [response]]
     end
 
     private
@@ -214,6 +210,7 @@ module Inigo
       end
 
       config = Inigo::Config.new
+      config[:disable_response_data] = false
 
       if settings.fetch("INIGO_DEBUG", "false").to_s.downcase == "true"
         config[:debug] = true
