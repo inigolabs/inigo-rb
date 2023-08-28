@@ -63,18 +63,12 @@ module Inigo
         output_ptr, output_len
       )
 
-      output_dict = {}
-
-      output_len_value = output_len.read_int
-      if output_len_value > 0
-        output_data = output_ptr.read_pointer.read_string(output_len_value)
-        output_dict = JSON.parse(output_data)
-      end
+      output_data = output_ptr.read_pointer.read_string(output_len.read_int)
 
       Inigo.disposeMemory(output_ptr.read_pointer)
       Inigo.disposeHandle(@handle)
 
-      output_dict
+      output_data
     end
   end
 end

@@ -60,7 +60,10 @@ module Inigo
                   :service, :pointer,
                   :token, :pointer,
                   :schema, :pointer,
-                  :introspection, :pointer
+                  :introspection, :pointer,
+                  :egress_url, :pointer,
+                  :gateway, :u_int64_t,
+                  :disable_response_data, :bool
       end
 
       attach_function :create, [:u_int64_t], :u_int64_t
