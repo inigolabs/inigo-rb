@@ -1,5 +1,6 @@
 require 'json'
-require_relative 'ffimod'
+
+require 'inigorb/ffimod'
 
 module Inigo
   class Query
