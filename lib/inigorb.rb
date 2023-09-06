@@ -1,7 +1,9 @@
 require 'json'
 require 'ffi'
-require_relative 'ffimod'
-require_relative 'query'
+
+require 'inigorb/ffimod'
+require 'inigorb/query'
+require 'inigorb/tracer'
 
 module Inigo
   class Middleware
@@ -297,6 +299,5 @@ module Inigo
         nil
       end
     end
-
-  end  
+  end
 end
