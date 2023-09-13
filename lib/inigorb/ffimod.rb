@@ -84,6 +84,7 @@ module Inigo
       attach_function :disposeHandle, [:u_int64_t], :void
       attach_function :disposeMemory, [:pointer], :void
       attach_function :check_lasterror, [], :string
+      attach_function :copy_querydata, [:u_int64_t], :u_int64_t
     rescue LoadError => e
       raise ::RuntimeError, "Unable to open Inigo shared library.\n\nPlease get in touch with us for support:\nemail: support@inigo.io\nslack: https://slack.inigo.io\n\nPlease share the below info with us:\nerror:    #{e.to_s}\nuname:    #{RbConfig::CONFIG['host_os']}\narch:     #{RbConfig::CONFIG['host_cpu']}"
     end  

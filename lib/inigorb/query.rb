@@ -3,7 +3,21 @@ require 'json'
 require 'inigorb/ffimod'
 
 module Inigo
+  # made to simplify user experience. just prepend Inigo::Data to your channel and it will work.
+  module Data
+    attr_accessor :querydata
+
+    def unsubscribed
+      if @querydata
+        Inigo.disposeHandle(@querydata.handle)
+      end
+      super
+    end
+  end
+
   class Query
+    attr_reader :handle
+
     def initialize(instance, request)
       @handle = 0
       @instance = instance
@@ -51,15 +65,21 @@ module Inigo
       [resp_dict, req_dict]
     end
 
-    def process_response(resp_body)
+    def process_response(resp_body, is_initial_subscription: false, copy: false)
       return nil if @handle.zero?
 
       output_ptr = FFI::MemoryPointer.new(:pointer)
       output_len = FFI::MemoryPointer.new(:int)
 
+      handle = @handle
+      if copy
+        # if it is subscription and not initial request - reuse existing querydata
+        handle = Inigo.copy_querydata(@handle)
+      end
+
       Inigo.process_response(
         @instance,
-        @handle,
+        handle,
         FFI::MemoryPointer.from_string(resp_body), resp_body.length,
         output_ptr, output_len
       )
@@ -67,7 +87,11 @@ module Inigo
       output_data = output_ptr.read_pointer.read_string(output_len.read_int)
 
       Inigo.disposeMemory(output_ptr.read_pointer)
-      Inigo.disposeHandle(@handle)
+
+      # if it is initial subscription request - do not dispose handle
+      if !is_initial_subscription
+        Inigo.disposeHandle(handle)
+      end
 
       output_data
     end

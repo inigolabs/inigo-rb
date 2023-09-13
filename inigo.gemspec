@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
 
   s.authors     = ["Inigo"]
   s.email       = "eitan@inigo.io"
-  s.files       = Dir['lib/*.rb', 'lib/inigorb/*.rb', 'lib/inigorb/*.so', 'lib/inigorb/*.dylib', 'lib/inigorb/*.dll', 'README.md']
+  s.files       = Dir['lib/**/*.rb', 'lib/inigorb/*.so', 'lib/inigorb/*.dylib', 'lib/inigorb/*.dll', 'README.md']
   s.homepage    = "https://inigo.io"
   s.license     = "MIT"
   s.metadata = {
