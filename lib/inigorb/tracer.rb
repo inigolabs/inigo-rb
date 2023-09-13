@@ -53,30 +53,65 @@ module Inigo
       end
 
       queries = []
+      subscription_queries = {}
+      initial_subscriptions = {}
       modified_responses = {}
+      cached_queries = {}
 
       data[:multiplex].queries.each_with_index do |query, index|
-        # no single source of the whole query data
+        is_subscription = query.context[:channel] != nil
+        is_init_subscription = is_subscription && !query.context[:subscription_id]
+
+        if is_subscription && !is_init_subscription
+          # retrieve querydata stored after initial subscription request
+          subscription_queries[index] = query.context[:channel].querydata
+          queries.append(query.context[:channel].querydata)
+          # no need to process request again, it will be copied
+          next
+        end
+
         gReq = {
-          :query => query.query_string,
-          :operation_name => query.operation_name,
-          :variables => query.variables.to_h,
+          'query' => query.query_string,
         }
+
+        gReq['operationName'] = query.operation_name if query.operation_name && query.operation_name != ''
+        gReq['variables'] = query.variables.to_h if query.variables
 
         q = Query.new(self.class.instance, JSON.dump(gReq))
 
-        # TODO no options to return early response. query will be executed anyways
-        resp, req = q.process_request(headers(query.context['request']))
+        incoming_request = query.context['request']
+        if is_subscription
+          incoming_request = ActionDispatch::Request.new(query.context[:channel].connection.env)
+        end
 
-        # Introspection query
+        resp, req = q.process_request(headers(incoming_request))
+
+        # Introspection or blocked query
         if resp.any?
           modified_responses[index]  = resp
+          cached_queries[index] = query
+
+          # trick not to execute actual query. we can't remove query from multiplex at all but we can fool it by modifying the query executed on the schema.
+          modified_query = GraphQL::Query.new(query.schema, 'query IntrospectionQuery { __schema { queryType { name } } }', context: query.context, operation_name: 'IntrospectionQuery')
+          modified_query.multiplex = query.multiplex
+          # TODO - verify works in all the cases. During the testing it works, simulate multiple queries at the same time to verify.
+          data[:multiplex].queries[index] = modified_query
+
+          queries.append(q)
+          next
         end
 
         # Modify query if required
         if req.any?
-          modified_query = GraphQL::Query.new(@@schema, req['query'], context: query.context, operation_name: req['operationName'], variables: req['variables'])
+          modified_query = GraphQL::Query.new(query.schema, req['query'], context: query.context, operation_name: req['operationName'], variables: req['variables'])
           modified_query.multiplex = query.multiplex
+          # TODO - verify works in all the cases. During the testing it works, simulate multiple queries at the same time to verify.
+          data[:multiplex].queries[index] = modified_query
+        end
+
+        if is_subscription
+          query.context[:channel].querydata = q
+          initial_subscriptions[index] = true
         end
 
         queries.append(q)
@@ -87,12 +122,15 @@ module Inigo
       responses.each_with_index do |response, index|
         if modified_responses[index]
           # process_response is not called in this case
-          responses[index] = GraphQL::Query::Result.new(query: data[:multiplex].queries[index], values: modified_responses[index])
+          responses[index] = GraphQL::Query::Result.new(query: cached_queries[index], values: modified_responses[index])
           next
         end
 
-        processed_response = queries[index].process_response(response.to_json)
-        responses[index] = GraphQL::Query::Result.new(query: data[:multiplex].queries[index], values: processed_response)
+        # take a copy of the initial subscription request if it is subscription
+        needs_copy = subscription_queries[index] != nil
+        is_initial_subscription = initial_subscriptions[index] != nil
+        processed_response = queries[index].process_response(response.to_json, is_initial_subscription: is_initial_subscription, copy: needs_copy)
+        responses[index] = GraphQL::Query::Result.new(query: data[:multiplex].queries[index], values: processed_response ? JSON.parse(processed_response) : response.to_h)
       end
 
       responses
@@ -129,6 +167,7 @@ module Inigo
 
       config = Inigo::Config.new
 
+      config[:disable_response_data] = false
       config[:debug] = settings.fetch("INIGO_DEBUG", "false").to_s.downcase == "true"
       config[:token] = FFI::MemoryPointer.from_string(settings.fetch('INIGO_SERVICE_TOKEN', '').to_s.encode('UTF-8'))
       config[:schema] = FFI::MemoryPointer.from_string(schema.to_s.encode('UTF-8'))
@@ -150,7 +189,7 @@ module Inigo
 
     def headers(request)
       headers = {}
-    
+
       request.env.each do |key, value|
         if key.start_with?('HTTP_')
           header_name = key[5..].split('_').map(&:capitalize).join('-')
@@ -159,7 +198,7 @@ module Inigo
           headers[key] = value.split(',').map(&:strip)
         end
       end
-    
+
       JSON.dump(headers)
     end
 
