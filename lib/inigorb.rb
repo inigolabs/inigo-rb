@@ -211,6 +211,8 @@ module Inigo
 
       config = Inigo::Config.new
       config[:disable_response_data] = false
+      config[:name] = FFI::MemoryPointer.from_string("inigo-rb".to_s.encode('UTF-8'))
+      config[:runtime] = FFI::MemoryPointer.from_string("ruby".concat(RUBY_VERSION[/\d+\.\d+/]).to_s.encode('UTF-8'))
 
       if settings.fetch("INIGO_DEBUG", "false").to_s.downcase == "true"
         config[:debug] = true
