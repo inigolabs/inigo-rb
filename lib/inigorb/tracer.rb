@@ -129,8 +129,13 @@ module Inigo
         # take a copy of the initial subscription request if it is subscription
         needs_copy = subscription_queries[index] != nil
         is_initial_subscription = initial_subscriptions[index] != nil
-        processed_response = queries[index].process_response(response.to_json, is_initial_subscription: is_initial_subscription, copy: needs_copy)
-        responses[index] = GraphQL::Query::Result.new(query: data[:multiplex].queries[index], values: processed_response ? JSON.parse(processed_response) : response.to_h)
+        resp = {
+          'errors' => response['errors'],
+          'response_size' => 0,
+          'response_body_counts' => count_response_fields(response.to_h)
+        }
+        processed_response = queries[index].process_response(JSON.dump(resp), is_initial_subscription: is_initial_subscription, copy: needs_copy)
+        responses[index] = GraphQL::Query::Result.new(query: data[:multiplex].queries[index], values: mod_response(response.to_h, JSON.parse(processed_response)))
       end
 
       responses
@@ -150,7 +155,43 @@ module Inigo
     def platform_field_key(type, field)
       "graphql.#{type.name}.#{field.name}"
     end
-    
+
+    def count_response_fields(resp)
+      counts = {}
+
+      if resp['data']
+        count_response_fields_recursive(counts, 'data', resp['data'])
+      end
+
+      counts['data'] ||= 1
+      counts['errors'] = resp['errors'] ? resp['errors'].length : 0
+      counts
+    end
+
+    def count_response_fields_recursive(hm, prefix, val)
+      return unless val.is_a?(Hash) || val.is_a?(Array)
+
+      incr = lambda do |key, value|
+        unless count_response_fields_recursive(hm, key, value)
+          hm[key] = (hm[key] || 0) + 1
+        end
+      end
+
+      if val.is_a?(Array)
+        val.each do |item|
+          incr.call(prefix, item)
+        end
+
+        return true
+      end
+
+      val.each do |k, v|
+        incr.call("#{prefix}.#{k}", v)
+      end
+
+      return false
+    end
+
     private
 
     def self.initialize_tracer(schema)
@@ -200,6 +241,20 @@ module Inigo
       end
 
       JSON.dump(headers)
+    end
+
+    def mod_response(response, extended)
+      if extended['extensions']
+        response['extensions'] ||= {}
+        response['extensions'].merge!(extended['extensions'])
+      end
+    
+      if extended['errors']
+        response['errors'] ||= []
+        response['errors'].concat(extended['errors'])
+      end
+
+      response
     end
 
   end
