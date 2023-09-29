@@ -56,11 +56,11 @@ module Inigo
 
       class Config < FFI::Struct
           layout :debug, :bool,
-                  :ingest, :pointer,
+                  :name, :pointer,
                   :service, :pointer,
                   :token, :pointer,
                   :schema, :pointer,
-                  :introspection, :pointer,
+                  :runtime, :pointer,
                   :egress_url, :pointer,
                   :gateway, :u_int64_t,
                   :disable_response_data, :bool
