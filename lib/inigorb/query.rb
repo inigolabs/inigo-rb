@@ -78,7 +78,7 @@ module Inigo
       end
 
       Inigo.process_response(
-        @instance,
+        1,
         handle,
         FFI::MemoryPointer.from_string(resp_body), resp_body.length,
         output_ptr, output_len
