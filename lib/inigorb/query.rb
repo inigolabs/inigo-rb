@@ -37,7 +37,7 @@ module Inigo
       headers_len = headers.to_s.length
 
       @handle = Inigo.process_request(
-        @instance,
+        1,
         headers_ptr, headers_len,
         resp_input, @request.length,
         output_ptr, output_len,
