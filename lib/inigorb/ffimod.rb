@@ -1,43 +1,44 @@
 require 'ffi'
 
 module Inigo
-    class Library
-      extend FFI::Library
+  class Library
+    extend FFI::Library
 
-      def self.get_arch(system_name)
-        machine = RbConfig::CONFIG['target_cpu'].downcase
-        if system_name == 'darwin'
-          return 'amd64' if machine == 'x86_64'
-          return 'arm64' if machine == 'arm64'
-        end
-      
-        if system_name == 'linux'
-          if machine == 'aarch64'
-            return 'arm64'
-          # 32 bits systems bindings support is on the way
-          # elsif RUBY_PLATFORM.match?(/(i\d86|x\d86)/)
-          #   return '386'
-          elsif machine == 'x86_64'
-            return 'amd64'
-          elsif machine.start_with?('arm') # armv7l
-            return 'arm'
-          end
-        end
-      
-        if system_name == 'windows'
-          return 'amd64' if ['x86_64', 'universal'].include?(RbConfig::CONFIG['host_cpu'])
-        end
-      
-        machine
+    def self.get_arch(system_name)
+      machine = RbConfig::CONFIG['target_cpu'].downcase
+      if system_name == 'darwin'
+        return 'amd64' if machine == 'x86_64'
+        return 'arm64' if machine == 'arm64'
       end
-
-      def self.get_ext(system_name)
-        return '.dll' if system_name == 'windows'
-        return '.dylib' if system_name == 'darwin'
-
-        '.so'
+    
+      if system_name == 'linux'
+        if machine == 'aarch64'
+          return 'arm64'
+        # 32 bits systems bindings support is on the way
+        # elsif RUBY_PLATFORM.match?(/(i\d86|x\d86)/)
+        #   return '386'
+        elsif machine == 'x86_64'
+          return 'amd64'
+        elsif machine.start_with?('arm') # armv7l
+          return 'arm'
+        end
       end
+    
+      if system_name == 'windows'
+        return 'amd64' if ['x86_64', 'universal'].include?(RbConfig::CONFIG['host_cpu'])
+      end
+    
+      machine
+    end
 
+    def self.get_ext(system_name)
+      return '.dll' if system_name == 'windows'
+      return '.dylib' if system_name == 'darwin'
+
+      '.so'
+    end
+
+    def initialize
       system_name = RbConfig::CONFIG['host_os']
       
       supported_systems = /(linux|darwin|mingw|mswin|cygwin)/
@@ -90,5 +91,5 @@ module Inigo
       rescue LoadError => e
         raise ::RuntimeError, "Unable to open Inigo shared library.\n\nPlease get in touch with us for support:\nemail: support@inigo.io\nslack: https://slack.inigo.io\n\nPlease share the below info with us:\nerror:    #{e.to_s}\nuname:    #{RbConfig::CONFIG['host_os']}\narch:     #{RbConfig::CONFIG['host_cpu']}"
       end
-    end  
+  end  
 end
