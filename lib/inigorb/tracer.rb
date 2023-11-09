@@ -203,7 +203,6 @@ module Inigo
       settings = ENV.select { |k, v| k.start_with?('INIGO') }
 
       if settings.fetch("INIGO_ENABLE", "").to_s.downcase == "false"
-        @@initialized = true #not to get to this method ever again
         puts 'Inigo is disabled. Skipping middleware.'
         return
       end
