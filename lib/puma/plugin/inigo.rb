@@ -30,9 +30,9 @@ module Puma
         end
     
         def config(c)
-          c.on_worker_boot {
+          c.on_worker_boot do
             Inigo::Tracer.initialize_tracer(Puma::Plugin::InigoPlugin.config.schema_class.to_definition) 
-          }
+          end
         end
       end
 
