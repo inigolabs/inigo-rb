@@ -79,12 +79,14 @@ module Inigo
 
         q = Query.new(self.class.instance, JSON.dump(gReq))
 
-        incoming_request = query.context['request']
+        headers_obj = query.context[:headers] if query.context[:headers]
+        headers_obj = query.context['request'].headers if headers_obj == nil && query.context['request']
+        headers_obj = query.context[:request].headers if headers_obj == nil && query.context[:request]
         if is_subscription
-          incoming_request = ActionDispatch::Request.new(query.context[:channel].connection.env)
+          headers_obj = ActionDispatch::Http::Headers.from_hash(query.context[:channel].connection.env)
         end
 
-        resp, req = q.process_request(headers(incoming_request))
+        resp, req = q.process_request(headers(headers_obj))
 
         # Introspection or blocked query
         if resp.any?
@@ -229,10 +231,10 @@ module Inigo
       end
     end
 
-    def headers(request)
+    def headers(headers_obj)
       headers = {}
 
-      request.env.each do |key, value|
+      headers_obj.env.each do |key, value|
         if key.start_with?('HTTP_')
           header_name = key[5..].split('_').map(&:capitalize).join('-')
           headers[header_name] = value.split(',').map(&:strip)
