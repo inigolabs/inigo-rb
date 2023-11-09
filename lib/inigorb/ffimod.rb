@@ -16,41 +16,41 @@ module Inigo
   class Library
     extend FFI::Library
 
-    def self.get_arch(system_name)
-      machine = RbConfig::CONFIG['target_cpu'].downcase
-      if system_name == 'darwin'
-        return 'amd64' if machine == 'x86_64'
-        return 'arm64' if machine == 'arm64'
-      end
-    
-      if system_name == 'linux'
-        if machine == 'aarch64'
-          return 'arm64'
-        # 32 bits systems bindings support is on the way
-        # elsif RUBY_PLATFORM.match?(/(i\d86|x\d86)/)
-        #   return '386'
-        elsif machine == 'x86_64'
-          return 'amd64'
-        elsif machine.start_with?('arm') # armv7l
-          return 'arm'
-        end
-      end
-    
-      if system_name == 'windows'
-        return 'amd64' if ['x86_64', 'universal'].include?(RbConfig::CONFIG['host_cpu'])
-      end
-    
-      machine
-    end
-
-    def self.get_ext(system_name)
-      return '.dll' if system_name == 'windows'
-      return '.dylib' if system_name == 'darwin'
-
-      '.so'
-    end
-
     def initialize
+      def self.get_arch(system_name)
+        machine = RbConfig::CONFIG['target_cpu'].downcase
+        if system_name == 'darwin'
+          return 'amd64' if machine == 'x86_64'
+          return 'arm64' if machine == 'arm64'
+        end
+      
+        if system_name == 'linux'
+          if machine == 'aarch64'
+            return 'arm64'
+          # 32 bits systems bindings support is on the way
+          # elsif RUBY_PLATFORM.match?(/(i\d86|x\d86)/)
+          #   return '386'
+          elsif machine == 'x86_64'
+            return 'amd64'
+          elsif machine.start_with?('arm') # armv7l
+            return 'arm'
+          end
+        end
+      
+        if system_name == 'windows'
+          return 'amd64' if ['x86_64', 'universal'].include?(RbConfig::CONFIG['host_cpu'])
+        end
+      
+        machine
+      end
+  
+      def self.get_ext(system_name)
+        return '.dll' if system_name == 'windows'
+        return '.dylib' if system_name == 'darwin'
+  
+        '.so'
+      end
+  
       system_name = RbConfig::CONFIG['host_os']
       
       supported_systems = /(linux|darwin|mingw|mswin|cygwin)/
