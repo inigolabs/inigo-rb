@@ -50,6 +50,7 @@ module Inigo
     end
 
     def self.load
+      pp "loading ffi libraries"
       system_name = RbConfig::CONFIG['host_os']
       
       supported_systems = /(linux|darwin|mingw|mswin|cygwin)/

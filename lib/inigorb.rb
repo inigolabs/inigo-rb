@@ -191,67 +191,67 @@ module Inigo
 
     private
 
-    def self.initialize_middleware(schema = nil, operation_store = nil)
-      return if @@initialized
+    # def self.initialize_middleware(schema = nil, operation_store = nil)
+    #   return if @@initialized
 
-      if schema
-        @@schema = schema
-      end
+    #   if schema
+    #     @@schema = schema
+    #   end
 
-      if operation_store
-        @@operation_store = operation_store
-      end
+    #   if operation_store
+    #     @@operation_store = operation_store
+    #   end
 
-      # get all the inigo settings from env
-      settings = ENV.select { |k, v| k.start_with?('INIGO') }
+    #   # get all the inigo settings from env
+    #   settings = ENV.select { |k, v| k.start_with?('INIGO') }
 
-      if settings.fetch("INIGO_ENABLE", "").to_s.downcase == "false"
-        @@initialized = true #not to get to this method ever again
-        puts 'Inigo is disabled. Skipping middleware.'
-        return
-      end
+    #   if settings.fetch("INIGO_ENABLE", "").to_s.downcase == "false"
+    #     @@initialized = true #not to get to this method ever again
+    #     puts 'Inigo is disabled. Skipping middleware.'
+    #     return
+    #   end
 
-      config = Inigo::Config.new
-      config[:disable_response_data] = false
-      config[:name] = FFI::MemoryPointer.from_string("inigo-rb".to_s.encode('UTF-8'))
-      config[:runtime] = FFI::MemoryPointer.from_string("ruby".concat(RUBY_VERSION[/\d+\.\d+/]).to_s.encode('UTF-8'))
+    #   config = Inigo::Config.new
+    #   config[:disable_response_data] = false
+    #   config[:name] = FFI::MemoryPointer.from_string("inigo-rb".to_s.encode('UTF-8'))
+    #   config[:runtime] = FFI::MemoryPointer.from_string("ruby".concat(RUBY_VERSION[/\d+\.\d+/]).to_s.encode('UTF-8'))
 
-      if settings.fetch("INIGO_DEBUG", "false").to_s.downcase == "true"
-        config[:debug] = true
-      else
-        config[:debug] = false
-      end
+    #   if settings.fetch("INIGO_DEBUG", "false").to_s.downcase == "true"
+    #     config[:debug] = true
+    #   else
+    #     config[:debug] = false
+    #   end
 
-      config[:token] = FFI::MemoryPointer.from_string(settings.fetch('INIGO_SERVICE_TOKEN', '').to_s.encode('UTF-8'))
+    #   config[:token] = FFI::MemoryPointer.from_string(settings.fetch('INIGO_SERVICE_TOKEN', '').to_s.encode('UTF-8'))
 
-      schema = nil
-      if @@schema
-        schema = @@schema
-      elsif settings.fetch('INIGO_SCHEMA_PATH', '') != ''
-        path = settings.fetch('INIGO_SCHEMA_PATH')
-        if File.exist?(path)
-          schema = File.read(path)
-        end
-      end
+    #   schema = nil
+    #   if @@schema
+    #     schema = @@schema
+    #   elsif settings.fetch('INIGO_SCHEMA_PATH', '') != ''
+    #     path = settings.fetch('INIGO_SCHEMA_PATH')
+    #     if File.exist?(path)
+    #       schema = File.read(path)
+    #     end
+    #   end
 
-      config[:schema] = FFI::MemoryPointer.from_string(schema.to_s.encode('UTF-8')) if schema
+    #   config[:schema] = FFI::MemoryPointer.from_string(schema.to_s.encode('UTF-8')) if schema
 
-      @@path = settings.fetch('INIGO_PATH', '/graphql')
+    #   @@path = settings.fetch('INIGO_PATH', '/graphql')
 
-      # Create Inigo instance
-      @@instance = Inigo.create(config.pointer.address)
+    #   # Create Inigo instance
+    #   @@instance = Inigo.create(config.pointer.address)
 
-      error = Inigo.check_lasterror
-      if error.length != 0
-        puts "INIGO: #{error}"
-      end
+    #   error = Inigo.check_lasterror
+    #   if error.length != 0
+    #     puts "INIGO: #{error}"
+    #   end
 
-      if @@instance == 0
-        puts 'INIGO: error, instance cannot be created'
-      end
+    #   if @@instance == 0
+    #     puts 'INIGO: error, instance cannot be created'
+    #   end
 
-      @@initialized = true
-    end
+    #   @@initialized = true
+    # end
 
     def headers(request)
       headers = {}
