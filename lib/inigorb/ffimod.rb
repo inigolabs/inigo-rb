@@ -14,7 +14,7 @@ module Inigo
   end
 
   class Library
-    def initialize
+    def load_library
       
       def self.get_arch(system_name)
         machine = RbConfig::CONFIG['target_cpu'].downcase
@@ -67,7 +67,7 @@ module Inigo
       begin
         pp "load inigo library files"
 
-        include FFI::Library
+        extend FFI::Library
         ffi_lib File.join(File.dirname(__FILE__), filename)
 
         attach_function :create, [:u_int64_t], :u_int64_t
@@ -93,5 +93,6 @@ module Inigo
         raise ::RuntimeError, "Unable to open Inigo shared library.\n\nPlease get in touch with us for support:\nemail: support@inigo.io\nslack: https://slack.inigo.io\n\nPlease share the below info with us:\nerror:    #{e.to_s}\nuname:    #{RbConfig::CONFIG['host_os']}\narch:     #{RbConfig::CONFIG['host_cpu']}"
       end
     end
+    
   end  
 end
