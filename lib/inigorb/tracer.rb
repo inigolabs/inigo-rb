@@ -197,7 +197,8 @@ module Inigo
     def self.initialize_tracer(schema)
       @@schema = schema
 
-      Inigo::Library.new
+      l = Inigo::Library.new
+      l.load_library
 
       # get all the inigo settings from env
       settings = ENV.select { |k, v| k.start_with?('INIGO') }
