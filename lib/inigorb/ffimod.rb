@@ -1,9 +1,9 @@
 require 'ffi'
 
 module Inigo
-    extend FFI::Library
-
     class Library
+      extend FFI::Library
+
       def self.get_arch(system_name)
         machine = RbConfig::CONFIG['target_cpu'].downcase
         if system_name == 'darwin'
