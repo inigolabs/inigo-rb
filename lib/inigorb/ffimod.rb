@@ -52,6 +52,7 @@ module Inigo
     filename = "inigo-#{system_name}-#{get_arch(system_name)}#{get_ext(system_name)}"
 
     begin
+      pp "load inigo library files"
       ffi_lib File.join(File.dirname(__FILE__), filename)
 
       class Config < FFI::Struct
