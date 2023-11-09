@@ -192,7 +192,8 @@ module Inigo
     private
 
     def self.initialize_middleware(schema = nil, operation_store = nil)
-      return if @@initialized
+      # return if @@initialized
+      Library.new
 
       if schema
         @@schema = schema
