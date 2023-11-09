@@ -14,6 +14,10 @@ module Inigo
   end
 
   class Library
+    module TEST 
+      pp "HI FROMT TEST"
+    end
+    
     def initialize
       
       def self.get_arch(system_name)
