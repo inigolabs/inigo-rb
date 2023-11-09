@@ -206,6 +206,7 @@ module Inigo
         return
       end
 
+      Inigo::load
       config = Inigo::Config.new
 
       config[:disable_response_data] = false

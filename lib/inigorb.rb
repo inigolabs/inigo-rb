@@ -211,6 +211,7 @@ module Inigo
         return
       end
 
+      Inigo::load
       config = Inigo::Config.new
       config[:disable_response_data] = false
       config[:name] = FFI::MemoryPointer.from_string("inigo-rb".to_s.encode('UTF-8'))
