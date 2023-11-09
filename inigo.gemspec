@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
   s.add_dependency('jwt', '~> 2.7.1', '>= 2.7.1')
   s.add_dependency('ffi', '~> 1.15.5', '>= 1.15.5')
   s.add_dependency('graphql', '~> 2.0.24', '>= 2.0.24')
+  s.add_dependency('puma', '~> 5.0', '>= 5.0')
 
   s.required_ruby_version = ">= 3.1.0"
 end
