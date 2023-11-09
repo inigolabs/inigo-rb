@@ -1,6 +1,18 @@
 require 'ffi'
 
 module Inigo
+  class Config < FFI::Struct
+      layout :debug, :bool,
+              :name, :pointer,
+              :service, :pointer,
+              :token, :pointer,
+              :schema, :pointer,
+              :runtime, :pointer,
+              :egress_url, :pointer,
+              :gateway, :u_int64_t,
+              :disable_response_data, :bool
+  end
+
   class Library
     extend FFI::Library
 
@@ -57,17 +69,6 @@ module Inigo
         pp "load inigo library files"
         ffi_lib File.join(File.dirname(__FILE__), filename)
 
-        class Config < FFI::Struct
-            layout :debug, :bool,
-                    :name, :pointer,
-                    :service, :pointer,
-                    :token, :pointer,
-                    :schema, :pointer,
-                    :runtime, :pointer,
-                    :egress_url, :pointer,
-                    :gateway, :u_int64_t,
-                    :disable_response_data, :bool
-        end
 
         attach_function :create, [:u_int64_t], :u_int64_t
         attach_function :process_request, [
