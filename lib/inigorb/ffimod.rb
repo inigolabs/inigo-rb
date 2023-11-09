@@ -15,7 +15,7 @@ module Inigo
 
   class Library
     def initialize
-      extend FFI::Library
+      
       def self.get_arch(system_name)
         machine = RbConfig::CONFIG['target_cpu'].downcase
         if system_name == 'darwin'
@@ -66,8 +66,9 @@ module Inigo
 
       begin
         pp "load inigo library files"
-        ffi_lib File.join(File.dirname(__FILE__), filename)
 
+        extend FFI::Library
+        ffi_lib File.join(File.dirname(__FILE__), filename)
 
         attach_function :create, [:u_int64_t], :u_int64_t
         attach_function :process_request, [
