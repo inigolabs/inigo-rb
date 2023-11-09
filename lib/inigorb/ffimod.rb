@@ -14,9 +14,8 @@ module Inigo
   end
 
   class Library
-    extend FFI::Library
-
     def initialize
+      extend FFI::Library
       def self.get_arch(system_name)
         machine = RbConfig::CONFIG['target_cpu'].downcase
         if system_name == 'darwin'
