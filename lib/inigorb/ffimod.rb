@@ -3,6 +3,18 @@ require 'ffi'
 module Inigo
     extend FFI::Library
 
+    class Config < FFI::Struct
+      layout :debug, :bool,
+              :name, :pointer,
+              :service, :pointer,
+              :token, :pointer,
+              :schema, :pointer,
+              :runtime, :pointer,
+              :egress_url, :pointer,
+              :gateway, :u_int64_t,
+              :disable_response_data, :bool
+    end
+
     def self.get_arch(system_name)
       machine = RbConfig::CONFIG['target_cpu'].downcase
       if system_name == 'darwin'
@@ -54,18 +66,6 @@ module Inigo
 
       begin
         ffi_lib File.join(File.dirname(__FILE__), filename)
-
-        class Config < FFI::Struct
-            layout :debug, :bool,
-                    :name, :pointer,
-                    :service, :pointer,
-                    :token, :pointer,
-                    :schema, :pointer,
-                    :runtime, :pointer,
-                    :egress_url, :pointer,
-                    :gateway, :u_int64_t,
-                    :disable_response_data, :bool
-        end
 
         attach_function :create, [:u_int64_t], :u_int64_t
         attach_function :process_request, [
