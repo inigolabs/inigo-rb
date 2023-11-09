@@ -14,10 +14,6 @@ module Inigo
   end
 
   class Library
-    module TEST 
-      pp "HI FROMT TEST"
-    end
-    
     def initialize
       
       def self.get_arch(system_name)
@@ -71,7 +67,7 @@ module Inigo
       begin
         pp "load inigo library files"
 
-        extend FFI::Library
+        include FFI::Library
         ffi_lib File.join(File.dirname(__FILE__), filename)
 
         attach_function :create, [:u_int64_t], :u_int64_t
