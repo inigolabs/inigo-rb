@@ -49,7 +49,7 @@ module Inigo
       '.so'
     end
 
-    def load
+    def self.load
       system_name = RbConfig::CONFIG['host_os']
       
       supported_systems = /(linux|darwin|mingw|mswin|cygwin)/
