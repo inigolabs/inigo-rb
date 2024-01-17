@@ -76,6 +76,7 @@ module Inigo
 
         gReq['operationName'] = query.operation_name if query.operation_name && query.operation_name != ''
         gReq['variables'] = query.variables.to_h if query.variables
+        gReq['extensions'] = query.context[:extensions] if query.context[:extensions]
 
         q = Query.new(self.class.instance, JSON.dump(gReq))
 
