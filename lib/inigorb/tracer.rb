@@ -76,6 +76,11 @@ module Inigo
 
         gReq['operationName'] = query.operation_name if query.operation_name && query.operation_name != ''
         gReq['variables'] = query.variables.to_h if query.variables
+        # when operation registry is enabled and query string is absent query.variables is empty property as
+        # there is an error on query that query string is missing.
+        # query.variables is basically a method that provides a hash of variables provided and query default variables.
+        # in case with operation registry we don't have a string and should use only provided vars.
+        gReq['variables'] = query.provided_variables if query.query_string.nil? || query.query_string.empty?
         gReq['extensions'] = query.context[:extensions] if query.context[:extensions]
 
         q = Query.new(self.class.instance, JSON.dump(gReq))
