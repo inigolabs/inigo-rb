@@ -4,26 +4,30 @@
   <img height="25" src="/assets/ruby.svg">
 
   <p align="center">
-    GraphQL Middleware
+    GraphQL for Platform Teams
     <br />
-    <a href="https://docs.inigo.io"><strong>Explore the docs »</strong></a>
-    <br /> <br />
-    <a href="https://inigo.io">Homepage</a>
+    <a href="https://inigo.io">Home</a>
     ·
-    <a href="https://github.com/inigolabs/inigo-ruby/tree/master/example-rails">View an example</a>
+    <a href="https://docs.inigo.io/">Docs</a>
     ·
-    <a href="https://github.com/inigolabs/inigo-ruby/issues">Report Bug</a>
+    <a href="https://github.com/inigolabs/inigo-rb/issues">Issues</a>
+    ·
+    <a href="https://slack.inigo.io/">Slack</a>
   </p>
 </div>
 
-### Documentation
+### Overview
+Gain instant monitoring and protection into GraphQL APIs. Unblock platform teams and accelerate GraphQL adoption.
+Inigo's platform integration offers GraphQL Security, Analytics, Rate-limiting, Access Control and more.  
 
 This package is the Inigo plugin for Ruby servers.
 
-Documentation is available here: [docs.inigo.io](https://docs.inigo.io/docs/deployment)
+### Documentation
+* [Docs](https://docs.inigo.io/)
+* [Integration](https://docs.inigo.io/product/agent_installation/ruby_on_rails)
+* [Example](https://github.com/inigolabs/inigo-rb/tree/master/example-rails)
 
 ### Contributing
-
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
 ### License
