@@ -6,49 +6,20 @@ require 'inigorb/ffimod'
 require 'inigorb/query'
 
 module Inigo
-  class Tracer < GraphQL::Tracing::PlatformTracing
+  module Tracer
     @@instance = nil
 
-    def self.instance
-      @@instance
-    end
-
-    def self.instance=(value)
-      @@instance = value
-    end
-
     def initialize(options = {})
-      super(options)
       # add options like logger logic
     end
 
-    def self.use(schema, **kwargs)
-      @@schema = schema
-      super
-    end
-
-    self.platform_keys = {
-      'lex' => 'lex',
-      'parse' => 'parse',
-      'validate' => 'validate',
-      'analyze_query' => 'analyze_query',
-      'analyze_multiplex' => 'analyze_multiplex',
-      'execute_multiplex' => 'execute_multiplex',
-      'execute_query' => 'execute_query',
-      'execute_query_lazy' => 'execute_query_lazy'
-    }
-
-    def platform_trace(platform_key, key, data)
+    def execute_multiplex(multiplex:)
       # Ignore execution if Inigo is not initialized
-      if self.class.instance == 0
+      if @@instance == 0
         return yield
       end
 
-      if platform_key != "execute_multiplex"
-        return yield
-      end
-
-      if !data[:multiplex] || !data[:multiplex].queries || data[:multiplex].queries.length == 0
+      if !multiplex || !multiplex.queries || multiplex.queries.length == 0
         return yield
       end
 
@@ -58,7 +29,7 @@ module Inigo
       modified_responses = {}
       cached_queries = {}
 
-      data[:multiplex].queries.each_with_index do |query, index|
+      multiplex.queries.each_with_index do |query, index|
         is_subscription = query.context[:channel] != nil
         is_init_subscription = is_subscription && !query.context[:subscription_id]
 
@@ -83,7 +54,7 @@ module Inigo
         gReq['variables'] = query.provided_variables if query.query_string.nil? || query.query_string.empty?
         gReq['extensions'] = query.context[:extensions] if query.context[:extensions]
 
-        q = Query.new(self.class.instance, JSON.dump(gReq))
+        q = Query.new(@@instance, JSON.dump(gReq))
 
         headers_obj = query.context[:headers] if query.context[:headers]
         headers_obj = query.context['request'].headers if headers_obj == nil && query.context['request']
@@ -103,7 +74,7 @@ module Inigo
           modified_query = GraphQL::Query.new(query.schema, 'query IntrospectionQuery { __schema { queryType { name } } }', context: query.context, operation_name: 'IntrospectionQuery')
           modified_query.multiplex = query.multiplex
           # TODO - verify works in all the cases. During the testing it works, simulate multiple queries at the same time to verify.
-          data[:multiplex].queries[index] = modified_query
+          multiplex.queries[index] = modified_query
 
           queries.append(q)
           next
@@ -114,7 +85,7 @@ module Inigo
           modified_query = GraphQL::Query.new(query.schema, req['query'], context: query.context, operation_name: req['operationName'], variables: req['variables'])
           modified_query.multiplex = query.multiplex
           # TODO - verify works in all the cases. During the testing it works, simulate multiple queries at the same time to verify.
-          data[:multiplex].queries[index] = modified_query
+          multiplex.queries[index] = modified_query
         end
 
         if is_subscription
@@ -143,25 +114,10 @@ module Inigo
           'response_body_counts' => count_response_fields(response.to_h)
         }
         processed_response = queries[index].process_response(JSON.dump(resp), is_initial_subscription: is_initial_subscription, copy: needs_copy)
-        responses[index] = GraphQL::Query::Result.new(query: data[:multiplex].queries[index], values: mod_response(response.to_h, JSON.parse(processed_response)))
+        responses[index] = GraphQL::Query::Result.new(query: multiplex.queries[index], values: mod_response(response.to_h, JSON.parse(processed_response)))
       end
 
       responses
-    end
-
-    # compat
-    def platform_authorized_key(type)
-      "#{type.graphql_name}.authorized.graphql"
-    end
-
-    # compat
-    def platform_resolve_type_key(type)
-      "#{type.graphql_name}.resolve_type.graphql"
-    end
-
-    # compat
-    def platform_field_key(type, field)
-      "graphql.#{type.name}.#{field.name}"
     end
 
     def count_response_fields(resp)
